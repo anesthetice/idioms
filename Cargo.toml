@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.27.*", features = ["full"] }
+futures = "0.3.*"
 rand = "0.8.*"
 rsa = {version = "0.8.*", features=["pem"]}
 aes-gcm-siv = "0.11.*"
