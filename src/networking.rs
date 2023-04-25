@@ -4,7 +4,11 @@ mod async_encrypted_tcp_connection_handler {
     use rsa::{
         RsaPublicKey,
         Pkcs1v15Encrypt,
-        PublicKey
+        PublicKey,
+        pkcs8::{
+            DecodePrivateKey,
+            DecodePublicKey,
+        },
     };
     use aes_gcm_siv::{
         Aes256GcmSiv,
@@ -92,6 +96,7 @@ mod asnyc_tcp_connection_listener {
         time::sleep,
     };
 
+
     async fn listen(listening_port: usize) {
         loop {
             let listener : TcpListener = match TcpListener::bind(&format!("{}:{}", "0.0.0.0", listening_port)).await {
@@ -141,7 +146,8 @@ mod async_encrypted_tcp_client {
         let mut rng: ThreadRng = thread_rng();
         // authentication using RSA
         {
-            let mut buffer : [u8; 256] = [0; 256];
+            // 512 bytes for a 4096-bit rsa key
+            let mut buffer : [u8; 512] = [0; 512];
             stream.read(&mut buffer).await?;
             let token : Vec<u8> = client_private_key.decrypt(Pkcs1v15Encrypt, &buffer).unwrap();
             stream.write(&token).await?;
@@ -149,7 +155,8 @@ mod async_encrypted_tcp_client {
         }
 
         let cipher = {
-            let mut buffer : [u8; 256] = [0; 256];
+            // 512 bytes for a 4096-bit rsa key
+            let mut buffer : [u8; 512] = [0; 512];
             stream.read(&mut buffer).await?;
             let key : Vec<u8> = match client_private_key.decrypt(Pkcs1v15Encrypt, &buffer) {
                 Ok(key) => key,
